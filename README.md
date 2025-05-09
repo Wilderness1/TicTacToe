@@ -33,6 +33,6 @@ lib/
 ```
 
 ##  Contributors
-- Member 1: [Name] – Game Logic, UI
-- Member 2: [Name] – Storage, Modal, Player Setup
-- Member 3: [Name] – Game History, Testing, Documentation
+- Member 1: Jabrayilov Mayil – Game Logic,Player Setup Page,Storage & History Page ,UI, Documentation
+- Member 2: [Name] – 
+- Member 3: [Name] –  
