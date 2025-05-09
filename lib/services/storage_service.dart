@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class StorageService {
@@ -10,15 +11,24 @@ class StorageService {
     String config,
   ) async {
     final prefs = await SharedPreferences.getInstance();
-    final now = DateTime.now().toString();
-    final game = '$p1 vs $p2 | $result | $config | $now';
+    final now = DateTime.now().toIso8601String();
+
+    final newGame = jsonEncode({
+      'player1': p1,
+      'player2': p2,
+      'result': result,
+      'config': config,
+      'timestamp': now,
+    });
+
     final history = prefs.getStringList(key) ?? [];
-    history.add(game);
+    history.add(newGame);
     await prefs.setStringList(key, history);
   }
 
-  static Future<List<String>> getHistory() async {
+  static Future<List<Map<String, dynamic>>> getHistory() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList(key) ?? [];
+    final data = prefs.getStringList(key) ?? [];
+    return data.map((item) => jsonDecode(item)).cast<Map<String, dynamic>>().toList();
   }
 }
