@@ -33,6 +33,9 @@ class _GamePageState extends State<GamePage> {
   late String currentSymbol;
   bool gameOver = false;
   String winner = '';
+  List<List<int>> winningLine = [];
+  Offset? lineStart;
+  Offset? lineEnd;
 
   @override
   void initState() {
@@ -44,6 +47,11 @@ class _GamePageState extends State<GamePage> {
     board = List.generate(widget.rows, (_) => List.filled(widget.cols, ''));
     currentPlayer = widget.player1Name;
     currentSymbol = widget.player1Symbol;
+    gameOver = false;
+    winner = '';
+    winningLine = [];
+    lineStart = null;
+    lineEnd = null;
   }
 
   void _makeMove(int row, int col) {
@@ -87,27 +95,55 @@ class _GamePageState extends State<GamePage> {
   }
 
   bool _checkWin(int row, int col) {
-    return _count(row, col, 1, 0) + _count(row, col, -1, 0) + 1 >=
-            widget.kToWin ||
-        _count(row, col, 0, 1) + _count(row, col, 0, -1) + 1 >= widget.kToWin ||
-        _count(row, col, 1, 1) + _count(row, col, -1, -1) + 1 >=
-            widget.kToWin ||
-        _count(row, col, 1, -1) + _count(row, col, -1, 1) + 1 >= widget.kToWin;
+    List<List<int>> directions = [
+      [1, 0],
+      [0, 1],
+      [1, 1],
+      [1, -1],
+    ];
+    for (var dir in directions) {
+      int count = 1;
+      List<List<int>> line = [
+        [row, col],
+      ];
+
+      for (int i = 1; i < widget.kToWin; i++) {
+        int r = row + dir[0] * i;
+        int c = col + dir[1] * i;
+        if (r < 0 || r >= widget.rows || c < 0 || c >= widget.cols) break;
+        if (board[r][c] != currentSymbol) break;
+        count++;
+        line.add([r, c]);
+      }
+
+      for (int i = 1; i < widget.kToWin; i++) {
+        int r = row - dir[0] * i;
+        int c = col - dir[1] * i;
+        if (r < 0 || r >= widget.rows || c < 0 || c >= widget.cols) break;
+        if (board[r][c] != currentSymbol) break;
+        count++;
+        line.insert(0, [r, c]);
+      }
+
+      if (count >= widget.kToWin) {
+        winningLine = line;
+        if (line.length >= 2) {
+          lineStart = Offset(
+            line.first[1].toDouble(),
+            line.first[0].toDouble(),
+          );
+          lineEnd = Offset(line.last[1].toDouble(), line.last[0].toDouble());
+        }
+        return true;
+      }
+    }
+    return false;
   }
 
-  int _count(int row, int col, int dRow, int dCol) {
-    int count = 0;
-    int i = row + dRow, j = col + dCol;
-    while (i >= 0 &&
-        i < widget.rows &&
-        j >= 0 &&
-        j < widget.cols &&
-        board[i][j] == currentSymbol) {
-      count++;
-      i += dRow;
-      j += dCol;
-    }
-    return count;
+  Color getSymbolColor(String symbol) {
+    if (symbol == 'X') return Colors.orange;
+    if (symbol == 'O') return Colors.purple;
+    return Colors.black;
   }
 
   @override
@@ -116,36 +152,107 @@ class _GamePageState extends State<GamePage> {
       appBar: AppBar(title: Text('${widget.rows}x${widget.cols} Game')),
       body: Column(
         children: [
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           Text(
             gameOver ? 'Game Over' : "$currentPlayer's Turn ($currentSymbol)",
             style: const TextStyle(fontSize: 20),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           Expanded(
-            child: GridView.builder(
-              itemCount: widget.rows * widget.cols,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: widget.cols,
+            child: Center(
+              child: AspectRatio(
+                aspectRatio: widget.cols / widget.rows,
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.9,
+                  child: Stack(
+                    children: [
+                      GridView.builder(
+                        itemCount: widget.rows * widget.cols,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: widget.cols,
+                        ),
+                        itemBuilder: (_, index) {
+                          int row = index ~/ widget.cols;
+                          int col = index % widget.cols;
+                          String symbol = board[row][col];
+                          return BoardTile(
+                            value: symbol,
+                            onTap: () => _makeMove(row, col),
+                            isWinningCell: false,
+                            symbolColor: getSymbolColor(symbol),
+                          );
+                        },
+                      ),
+                      if (lineStart != null && lineEnd != null)
+                        CustomPaint(
+                          size: Size.infinite,
+                          painter: WinningLinePainter(
+                            start: lineStart,
+                            end: lineEnd,
+                            rows: widget.rows,
+                            cols: widget.cols,
+                            color: getSymbolColor(currentSymbol),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ),
-              itemBuilder: (_, index) {
-                int row = index ~/ widget.cols;
-                int col = index % widget.cols;
-                return BoardTile(
-                  value: board[row][col],
-                  onTap: () => _makeMove(row, col),
-                );
-              },
             ),
           ),
           if (gameOver)
             ResultModal(
               winner: winner,
-              onRestart: () => setState(_initBoard),
+              onRestart: () => setState(() => _initBoard()),
               onExit: () => Navigator.pop(context),
             ),
         ],
       ),
     );
   }
+}
+
+class WinningLinePainter extends CustomPainter {
+  final Offset? start;
+  final Offset? end;
+  final int rows;
+  final int cols;
+  final Color color;
+
+  WinningLinePainter({
+    required this.start,
+    required this.end,
+    required this.rows,
+    required this.cols,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (start == null || end == null) return;
+
+    final cellWidth = size.width / cols;
+    final cellHeight = size.height / rows;
+
+    final startPx = Offset(
+      start!.dx * cellWidth + cellWidth / 2,
+      start!.dy * cellHeight + cellHeight / 2,
+    );
+
+    final endPx = Offset(
+      end!.dx * cellWidth + cellWidth / 2,
+      end!.dy * cellHeight + cellHeight / 2,
+    );
+
+    final paint =
+        Paint()
+          ..color = color
+          ..strokeWidth = 6
+          ..strokeCap = StrokeCap.round;
+
+    canvas.drawLine(startPx, endPx, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
