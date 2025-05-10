@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'game_page.dart';
+import 'history_page.dart';
 
 class PlayerSetupPage extends StatefulWidget {
   const PlayerSetupPage({super.key});
@@ -15,9 +16,17 @@ class _PlayerSetupPageState extends State<PlayerSetupPage> {
   final TextEditingController _rowsController = TextEditingController();
   final TextEditingController _colsController = TextEditingController();
   final TextEditingController _kController = TextEditingController();
+  final TextEditingController _player2SymbolController =
+      TextEditingController();
 
   String _player1Symbol = 'X';
   String _player2Symbol = 'O';
+
+  @override
+  void initState() {
+    super.initState();
+    _player2SymbolController.text = _player2Symbol;
+  }
 
   void _startGame() {
     if (_formKey.currentState!.validate()) {
@@ -85,6 +94,7 @@ class _PlayerSetupPageState extends State<PlayerSetupPage> {
                   setState(() {
                     _player1Symbol = value!;
                     _player2Symbol = _player1Symbol == 'X' ? 'O' : 'X';
+                    _player2SymbolController.text = _player2Symbol;
                   });
                 },
                 decoration: const InputDecoration(labelText: 'Symbol'),
@@ -101,7 +111,7 @@ class _PlayerSetupPageState extends State<PlayerSetupPage> {
                     (value) => value!.isEmpty ? 'Enter Player 2 name' : null,
               ),
               TextFormField(
-                initialValue: _player2Symbol,
+                controller: _player2SymbolController,
                 readOnly: true,
                 decoration: const InputDecoration(labelText: 'Symbol (auto)'),
               ),
@@ -150,3 +160,4 @@ class _PlayerSetupPageState extends State<PlayerSetupPage> {
     );
   }
 }
+
