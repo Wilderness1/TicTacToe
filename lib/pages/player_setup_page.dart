@@ -133,6 +133,16 @@ class _PlayerSetupPageState extends State<PlayerSetupPage> {
                 onPressed: _startGame,
                 child: const Text('Start Game'),
               ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const HistoryPage()),
+                  );
+                },
+                child: const Text('View History'),
+              ),
             ],
           ),
         ),
