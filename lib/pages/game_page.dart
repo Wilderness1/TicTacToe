@@ -141,72 +141,108 @@ class _GamePageState extends State<GamePage> {
   }
 
   Color getSymbolColor(String symbol) {
-    if (symbol == 'X') return Colors.orange;
-    if (symbol == 'O') return Colors.purple;
+    if (symbol == 'X') return Colors.orangeAccent;
+    if (symbol == 'O') return Colors.deepPurpleAccent;
     return Colors.black;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.rows}x${widget.cols} Game')),
-      body: Column(
-        children: [
-          const SizedBox(height: 8),
-          Text(
-            gameOver ? 'Game Over' : "$currentPlayer's Turn ($currentSymbol)",
-            style: const TextStyle(fontSize: 20),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFe0c3fc), Color(0xFF8ec5fc)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: widget.cols / widget.rows,
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.9,
-                  child: Stack(
-                    children: [
-                      GridView.builder(
-                        itemCount: widget.rows * widget.cols,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: widget.cols,
-                        ),
-                        itemBuilder: (_, index) {
-                          int row = index ~/ widget.cols;
-                          int col = index % widget.cols;
-                          String symbol = board[row][col];
-                          return BoardTile(
-                            value: symbol,
-                            onTap: () => _makeMove(row, col),
-                            isWinningCell: false,
-                            symbolColor: getSymbolColor(symbol),
-                          );
-                        },
-                      ),
-                      if (lineStart != null && lineEnd != null)
-                        CustomPaint(
-                          size: Size.infinite,
-                          painter: WinningLinePainter(
-                            start: lineStart,
-                            end: lineEnd,
-                            rows: widget.rows,
-                            cols: widget.cols,
-                            color: getSymbolColor(currentSymbol),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              Text(
+                '${widget.rows}x${widget.cols} Tic-Tac-Toe',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                gameOver
+                    ? (winner == 'Draw' ? 'It\'s a Draw!' : '$winner Wins!')
+                    : "$currentPlayer's Turn ($currentSymbol)",
+                style: const TextStyle(fontSize: 18, color: Colors.black87),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: Center(
+                  child: AspectRatio(
+                    aspectRatio: widget.cols / widget.rows,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      margin: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.95),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
                           ),
-                        ),
-                    ],
+                        ],
+                      ),
+                      child: Stack(
+                        children: [
+                          GridView.builder(
+                            itemCount: widget.rows * widget.cols,
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: widget.cols,
+                                ),
+                            itemBuilder: (_, index) {
+                              int row = index ~/ widget.cols;
+                              int col = index % widget.cols;
+                              String symbol = board[row][col];
+                              return BoardTile(
+                                value: symbol,
+                                onTap: () => _makeMove(row, col),
+                                isWinningCell: winningLine.any(
+                                  (coord) => coord[0] == row && coord[1] == col,
+                                ),
+                                symbolColor: getSymbolColor(symbol),
+                              );
+                            },
+                          ),
+                          if (lineStart != null && lineEnd != null)
+                            CustomPaint(
+                              size: Size.infinite,
+                              painter: WinningLinePainter(
+                                start: lineStart,
+                                end: lineEnd,
+                                rows: widget.rows,
+                                cols: widget.cols,
+                                color: getSymbolColor(currentSymbol),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
+              if (gameOver)
+                ResultModal(
+                  winner: winner,
+                  onRestart: () => setState(() => _initBoard()),
+                  onExit: () => Navigator.pop(context),
+                ),
+              const SizedBox(height: 16),
+            ],
           ),
-          if (gameOver)
-            ResultModal(
-              winner: winner,
-              onRestart: () => setState(() => _initBoard()),
-              onExit: () => Navigator.pop(context),
-            ),
-        ],
+        ),
       ),
     );
   }
