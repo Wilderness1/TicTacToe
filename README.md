@@ -2,7 +2,7 @@
 Project For Programming Tech
 A customizable 2-player Tic-Tac-Toe game where you can define the board size (`N x M`) and winning condition (`K` in a row). Built using Flutter.
 
-## 🎮 Features
+##  Features
 - Player Setup Page:
   - Input names and choose game symbols (X or O)
   - Enter board configuration: N (rows), M (columns), K (marks to win)
@@ -34,5 +34,5 @@ lib/
 
 ##  Contributors
 - Member 1: Jabrayilov Mayil – Game Logic,Player Setup Page,Storage & History Page ,UI, Documentation
-- Member 2: [Name] – 
+- Member 2: Khayal Rzayev – Simple Model of game,Some changes in game Logic(Auto aligment for each box & font),fixing some Errors
 - Member 3: [Name] –  
