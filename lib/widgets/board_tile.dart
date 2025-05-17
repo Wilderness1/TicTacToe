@@ -18,33 +18,39 @@ class BoardTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.all(2),
-        decoration: BoxDecoration(
-          color:
-              isWinningCell
-                  ? symbolColor.withOpacity(0.2)
-                  : const Color.fromARGB(255, 49, 50, 51),
-          border: Border.all(
-            color:
-                isWinningCell
-                    ? symbolColor
-                    : const Color.fromARGB(255, 81, 83, 85),
-            width: 2,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: 40,
-              fontWeight: FontWeight.bold,
-              color: symbolColor,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          double tileSize = constraints.biggest.shortestSide;
+          double dynamicFontSize = tileSize * 0.6;
+
+          return Container(
+            margin: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color:
+                  isWinningCell
+                      ? symbolColor.withOpacity(0.2)
+                      : const Color.fromARGB(255, 49, 50, 51),
+              border: Border.all(
+                color:
+                    isWinningCell
+                        ? symbolColor
+                        : const Color.fromARGB(255, 81, 83, 85),
+                width: 2,
+              ),
             ),
-          ),
-        ),
+            child: Center(
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontSize: dynamicFontSize,
+                  fontWeight: FontWeight.bold,
+                  color: symbolColor,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 }
-
