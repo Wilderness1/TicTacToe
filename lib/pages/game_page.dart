@@ -236,6 +236,8 @@ class _GamePageState extends State<GamePage> {
               if (gameOver)
                 ResultModal(
                   winner: winner,
+                  player1Name: widget.player1Name,
+                  player2Name: widget.player2Name,
                   onRestart: () => setState(() => _initBoard()),
                   onExit: () => Navigator.pop(context),
                 ),
