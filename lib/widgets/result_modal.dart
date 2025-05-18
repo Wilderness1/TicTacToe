@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 
 class ResultModal extends StatelessWidget {
   final String winner;
+  final String player1Name;
+  final String player2Name;
   final VoidCallback onRestart;
   final VoidCallback onExit;
 
   const ResultModal({
     super.key,
     required this.winner,
+    required this.player1Name,
+    required this.player2Name,
     required this.onRestart,
     required this.onExit,
   });
@@ -16,6 +20,10 @@ class ResultModal extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDraw = winner == 'Draw';
     final winnerText = isDraw ? "It's a Draw!" : '🏆 Winner: $winner';
+    final loserText =
+        !isDraw
+            ? '💔 Loser: ${winner == player1Name ? player2Name : player1Name}'
+            : '';
 
     return Container(
       width: double.infinity,
@@ -48,7 +56,7 @@ class ResultModal extends StatelessWidget {
           const SizedBox(height: 10),
           if (!isDraw)
             Text(
-              '💔 Loser: ${winner == "Player 1" ? "Player 2" : "Player 1"}',
+              loserText,
               style: const TextStyle(fontSize: 16, color: Colors.white70),
               textAlign: TextAlign.center,
             ),
